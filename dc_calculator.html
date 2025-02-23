@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000000; /* Pure black background */
+      color: #FFA500; /* Orange text */
+      font-size: 18px; /* Larger font for readability */
+    }
+    #container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px; /* More padding for spacing */
+      background-color: #1a1a1a; /* Dark gray container background */
+      border-radius: 8px; /* Rounded corners */
+    }
+    #command {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      background-color: #333333; /* Dark input background */
+      color: #FFA500; /* Orange text */
+      border: 1px solid #FFA500; /* Orange border */
+      border-radius: 4px;
+    }
+    #command::placeholder {
+      color: #FFCC99; /* Light orange placeholder text */
+    }
+    #stack-label {
+      margin-top: 20px;
+      font-size: 1.2em; /* Slightly larger label */
+    }
+    #stack-contents {
+      font-size: 1.5em; /* Larger stack contents */
+      margin-top: 5px;
+      color: #FFA500; /* Orange text */
+    }
+    #output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      color: #FFA500; /* Orange text */
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>DC Calculator</h1>
+    <input type="text" id="command" placeholder="Enter command">
+    <div id="stack-label">Stack:</div>
+    <div id="stack-contents">[]</div>
+    <pre id="output"></pre>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const commandInput = document.getElementById('command');
+      const stackContentsDiv = document.getElementById('stack-contents');
+      const outputPre = document.getElementById('output');
+      let stack = [];
+
+      commandInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          processCommand();
+        }
+      });
+
+      function processCommand() {
+        const input = commandInput.value.trim();
+        if (input === '') {
+          return;
+        }
+        const tokens = input.split(/\s+/);
+        for (const token of tokens) {
+          if (!isNaN(token)) {
+            stack.push(Number(token));
+          } else if (token === '+') {
+            if (stack.length < 2) {
+              outputPre.textContent += "Error: insufficient operands for +\n";
+              return;
+            }
+            const b = stack.pop();
+            const a = stack.pop();
+            stack.push(a + b);
+          } else if (token === '-') {
+            if (stack.length < 2) {
+              outputPre.textContent += "Error: insufficient operands for -\n";
+              return;
+            }
+            const b = stack.pop();
+            const a = stack.pop();
+            stack.push(a - b);
+          } else if (token === '*') {
+            if (stack.length < 2) {
+              outputPre.textContent += "Error: insufficient operands for *\n";
+              return;
+            }
+            const b = stack.pop();
+            const a = stack.pop();
+            stack.push(a * b);
+          } else if (token === '/') {
+            if (stack.length < 2) {
+              outputPre.textContent += "Error: insufficient operands for /\n";
+              return;
+            }
+            const b = stack.pop();
+            const a = stack.pop();
+            if (b === 0) {
+              outputPre.textContent += "Error: division by zero\n";
+              stack.push(a);
+              stack.push(b);
+            } else {
+              stack.push(a / b);
+            }
+          } else if (token === '**') {
+            if (stack.length < 2) {
+              outputPre.textContent += "Error: insufficient operands for **\n";
+              return;
+            }
+            const b = stack.pop();
+            const a = stack.pop();
+            stack.push(Math.pow(a, b));
+          } else if (token === 'p') {
+            if (stack.length === 0) {
+              outputPre.textContent += "Error: stack empty for p\n";
+            } else {
+              outputPre.textContent += stack[stack.length - 1] + "\n";
+            }
+          } else {
+            outputPre.textContent += "Error: unknown command '" + token + "'\n";
+          }
+        }
+        stackContentsDiv.textContent = "[" + stack.slice().reverse().join(", ") + "]";
+        commandInput.value = '';
+        commandInput.focus(); // Set focus back to the input field
+      }
+
+      commandInput.focus(); // Set initial focus to the input field
+    });
+  </script>
+</body>
+</html>
